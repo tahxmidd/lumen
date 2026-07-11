@@ -71,6 +71,42 @@ export function DaylightSky() {
         <path d={grassPath(98, 18, 6, 18, 7)} fill="#557a3e" />
       </svg>
 
+      {/* A small solar array planted in the meadow, catching the sun */}
+      <svg
+        className="absolute bottom-[2vh] left-[6%] h-[11vh] min-h-20 w-[42vw] max-w-[440px]"
+        viewBox="0 0 440 110"
+        preserveAspectRatio="xMidYMax meet"
+        fill="none"
+      >
+        <defs>
+          <linearGradient id="panel-face" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#324a5f" />
+            <stop offset="100%" stopColor="#182430" />
+          </linearGradient>
+          <linearGradient id="panel-glint" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#fff" stopOpacity="0" />
+            <stop offset="42%" stopColor="#fff" stopOpacity="0.45" />
+            <stop offset="58%" stopColor="#fff" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M30 104 L34 66 M140 104 L144 64 M250 104 L254 64 M360 104 L364 66"
+          stroke="#3a4a3a"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
+        {[0, 110, 220, 330].map((x, i) => (
+          <g key={i} transform={`translate(${x} 0) skewX(-6)`}>
+            <rect x="10" y="18" width="90" height="52" rx="3" fill="url(#panel-face)" />
+            <line x1="10" y1="44" x2="100" y2="44" stroke="#0d151c" strokeWidth="2" />
+            <line x1="32" y1="18" x2="32" y2="70" stroke="#0d151c" strokeWidth="1.5" />
+            <line x1="54" y1="18" x2="54" y2="70" stroke="#0d151c" strokeWidth="1.5" />
+            <line x1="76" y1="18" x2="76" y2="70" stroke="#0d151c" strokeWidth="1.5" />
+            <rect x="10" y="18" width="90" height="52" rx="3" fill="url(#panel-glint)" />
+          </g>
+        ))}
+      </svg>
+
       {/* Soft haze where meadow meets sky, for card readability */}
       <div
         className="absolute inset-x-0 bottom-0 h-[34vh]"
