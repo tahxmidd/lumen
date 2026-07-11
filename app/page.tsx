@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Sun, Home, HardHat, Lightbulb, X } from "lucide-react";
+import { Sun, Home, HardHat, Lightbulb, Library, X } from "lucide-react";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -25,6 +25,12 @@ const PATHS = [
     icon: Lightbulb,
     title: "I just want to learn about solar",
     subtitle: "See what homeowners typically save before you shop for a system.",
+  },
+  {
+    href: "/directory",
+    icon: Library,
+    title: "Browse example audits",
+    subtitle: "See what Lumen surfaces on real contracts — verified and flagged.",
   },
 ];
 
@@ -80,7 +86,7 @@ export default function Home_() {
         </motion.button>
 
         {/* Fallback paths, visible once the popup is dismissed */}
-        <div className="mt-14 grid w-full max-w-2xl gap-3 sm:grid-cols-3">
+        <div className="mt-14 grid w-full max-w-2xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {PATHS.map(({ href, icon: Icon, title }) => (
             <Link
               key={href}
