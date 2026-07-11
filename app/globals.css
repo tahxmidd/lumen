@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Lumen pitch-black forensic palette */
-  --color-canvas: #000000;
-  --color-card: #0b0d0a;
-  --color-hairline: #1f241e;
-  --color-ink: #f4f6f2;
-  --color-faint: #8a8f84;
+  /* Lumen daylight palette — a clean tool under an open sky */
+  --color-canvas: #f4f1e3;
+  --color-card: #fffdf4;
+  --color-hairline: #ddd8c2;
+  --color-ink: #20241b;
+  --color-faint: #71776a;
 
-  /* Measured accent tokens */
+  /* Measured accent tokens, tuned for light surfaces */
   --color-fair: #2f7d5b;
-  --color-caution: #b7791f;
+  --color-caution: #a2690f;
   --color-risk: #b4402f;
-  --color-gold: #c9a227;
+  --color-gold: #a8821c;
 
-  --font-display: var(--font-fraunces);
+  --font-display: var(--font-serif);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-plex-mono);
 }
 
 ::selection {
-  background: rgba(201, 162, 39, 0.28);
-  color: #f4f6f2;
+  background: rgba(168, 130, 28, 0.25);
+  color: #20241b;
 }
 
 /* Thin editorial scrollbars on the textarea */
@@ -29,7 +29,7 @@ textarea::-webkit-scrollbar {
   width: 6px;
 }
 textarea::-webkit-scrollbar-thumb {
-  background: #1f241e;
+  background: #ddd8c2;
   border-radius: 3px;
 }
 
@@ -61,12 +61,23 @@ textarea::-webkit-scrollbar-thumb {
   animation: lumen-scan 1.6s ease-in-out infinite;
 }
 
+/* The sun's rays wheel very slowly */
+@keyframes lumen-rays {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lumen-rise,
   .lumen-scan {
     animation: none;
   }
   * {
+    animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
 }

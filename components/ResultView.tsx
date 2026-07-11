@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { ArrowLeft, Eye } from "lucide-react";
 import type { AnalysisResult, Mode } from "@/lib/types";
 import VerdictHeader from "@/components/VerdictHeader";
@@ -7,6 +8,18 @@ import RedFlags from "@/components/RedFlags";
 import KeyTerms from "@/components/KeyTerms";
 import HonestFooter from "@/components/HonestFooter";
 import VerifiedBadge from "@/components/VerifiedBadge";
+
+function Reveal({ children, order }: { children: React.ReactNode; order: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: order * 0.12, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 function qualifiesForVerifiedMark(result: AnalysisResult): boolean {
   return (
@@ -30,7 +43,7 @@ export default function ResultView({
   const verified = mode === "installer" && qualifiesForVerifiedMark(result);
 
   return (
-    <div className="lumen-rise mx-auto w-full max-w-[940px] px-6 pb-24">
+    <div className="mx-auto w-full max-w-[940px] px-6 pb-24">
       <div className="flex items-center justify-between py-8">
         <button
           onClick={onReset}
@@ -56,11 +69,23 @@ export default function ResultView({
       )}
 
       <div className="space-y-6">
-        <VerdictHeader result={result} mode={mode} />
-        {verified && <VerifiedBadge result={result} />}
-        <RedFlags result={result} mode={mode} />
-        <KeyTerms result={result} mode={mode} />
-        <HonestFooter result={result} />
+        <Reveal order={0}>
+          <VerdictHeader result={result} mode={mode} />
+        </Reveal>
+        {verified && (
+          <Reveal order={1}>
+            <VerifiedBadge result={result} />
+          </Reveal>
+        )}
+        <Reveal order={verified ? 2 : 1}>
+          <RedFlags result={result} mode={mode} />
+        </Reveal>
+        <Reveal order={verified ? 3 : 2}>
+          <KeyTerms result={result} mode={mode} />
+        </Reveal>
+        <Reveal order={verified ? 4 : 3}>
+          <HonestFooter result={result} />
+        </Reveal>
       </div>
     </div>
   );

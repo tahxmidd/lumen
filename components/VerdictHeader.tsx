@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { animate, motion, useReducedMotion } from "framer-motion";
 import type { AnalysisResult, Mode } from "@/lib/types";
 
 const RATING_META: Record<AnalysisResult["rating"], { label: string; color: string }> = {
@@ -11,17 +13,28 @@ const RATING_META: Record<AnalysisResult["rating"], { label: string; color: stri
 export default function VerdictHeader({ result, mode }: { result: AnalysisResult; mode: Mode }) {
   const { score, rating, verdict } = result;
   const meta = RATING_META[rating];
+  const reducedMotion = useReducedMotion();
+  const [displayScore, setDisplayScore] = useState(reducedMotion ? score : 0);
+
+  useEffect(() => {
+    const controls = animate(reducedMotion ? score : 0, score, {
+      duration: reducedMotion ? 0 : 1.4,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate: (v) => setDisplayScore(Math.round(v)),
+    });
+    return () => controls.stop();
+  }, [score, reducedMotion]);
 
   return (
-    <section className="rounded-xl border border-hairline bg-card p-8 sm:p-10">
+    <section className="rounded-2xl border border-hairline bg-card p-8 shadow-lg shadow-ink/5 sm:p-10">
       <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[11px] uppercase tracking-[0.3em] text-faint">
             {mode === "installer" ? "Customer-facing transparency score" : "Transparency score"}
           </p>
           <div className="mt-2 flex items-baseline gap-3">
-            <span className="font-display text-[96px] leading-none tracking-tight text-ink sm:text-[120px]">
-              {score}
+            <span className="font-display text-[96px] leading-none tracking-tight text-ink tabular-nums sm:text-[120px]">
+              {displayScore}
             </span>
             <span className="font-display text-2xl text-faint">/100</span>
           </div>
@@ -43,13 +56,15 @@ export default function VerdictHeader({ result, mode }: { result: AnalysisResult
                 "linear-gradient(to right, #B4402F 0%, #B7791F 50%, #2F7D5B 100%)",
             }}
           />
-          <div
-            className="absolute -top-[7px] transition-[left] duration-700 ease-out"
-            style={{ left: `calc(${score}% - 8px)` }}
+          <motion.div
+            className="absolute -top-[7px]"
+            initial={reducedMotion ? false : { left: "0%" }}
+            animate={{ left: `calc(${score}% - 8px)` }}
+            transition={{ type: "spring", stiffness: 50, damping: 15, delay: 0.15 }}
             aria-hidden
           >
             <div className="h-4 w-4 rotate-45 border-2 border-ink bg-canvas" />
-          </div>
+          </motion.div>
         </div>
         <div className="mt-3 flex justify-between text-[10px] uppercase tracking-[0.2em] text-faint">
           <span>Predatory</span>

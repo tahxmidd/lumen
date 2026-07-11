@@ -25,7 +25,8 @@ export default function LoadingScreen({ sourceLabel }: { sourceLabel: string }) 
   }, []);
 
   return (
-    <div className="lumen-rise mx-auto flex w-full max-w-[480px] flex-1 flex-col justify-center px-6 py-24">
+    <div className="lumen-rise mx-auto flex w-full max-w-[520px] flex-1 flex-col justify-center px-6 py-24">
+      <div className="rounded-2xl border border-hairline bg-card p-8 shadow-lg shadow-ink/5 sm:p-10">
       <p className="mb-2 text-[11px] uppercase tracking-[0.3em] text-gold">Auditing</p>
       <h2 className="font-display text-3xl text-ink">{sourceLabel}</h2>
 
@@ -72,6 +73,7 @@ export default function LoadingScreen({ sourceLabel }: { sourceLabel: string }) 
           );
         })}
       </ol>
+      </div>
     </div>
   );
 }

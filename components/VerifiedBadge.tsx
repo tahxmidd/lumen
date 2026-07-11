@@ -23,7 +23,7 @@ export default function VerifiedBadge({ result }: { result: AnalysisResult }) {
     <section>
       <div
         id="lumen-verified-badge"
-        className="relative overflow-hidden rounded-xl border border-gold/40 bg-card p-8 text-center sm:p-10"
+        className="relative overflow-hidden rounded-2xl border border-gold/40 bg-card p-8 text-center shadow-lg shadow-ink/5 sm:p-10"
       >
         {/* Sunlight hairlines framing the mark */}
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold to-transparent" />

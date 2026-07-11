@@ -43,8 +43,9 @@ No citation, no flag.
 
 ## How it works
 
-- **Three input paths** — drag-and-drop PDF (text extracted client-side via `pdfjs-dist`, so the document is read privately in your browser), raw pasted text, or a camera/photo upload (sent as base64 so Gemini performs OCR and structural analysis in one pass).
-- **Server-side trust engine** — `app/api/analyze/route.ts` calls `gemini-2.5-flash` with a strict forensic-advocate system prompt and JSON response mode, then sanitizes, verifies, severity-sorts, and caps the output. The API key never leaves the server.
+- **Three input paths** — drag-and-drop PDF (text extracted client-side via `pdfjs-dist`, so the document is read privately in your browser), raw pasted text, or a camera/photo upload.
+- **OCR for photos & scans** — with an optional `NUTRIENT_API_KEY`, photos and scanned PDFs are transcribed server-side by the [Nutrient Data Extraction API](https://www.nutrient.io/api/data-extraction-api/) first, which makes their quotes machine-verifiable just like digital text (`verification: "ocr-text-matched"`). Without the key, images fall back to Gemini's built-in vision (quotes then can't be independently verified, and the UI discloses that).
+- **Server-side trust engine** — `app/api/analyze/route.ts` calls `gemini-3.5-flash` with a strict forensic-advocate system prompt and JSON response mode, then sanitizes, verifies, severity-sorts, and caps the output. The API key never leaves the server.
 - **Benchmark math** — if system size and total cost are present, price-per-watt is computed and compared against the ~$3.00/W US average; significant spikes are marked hot.
 - **Anti-hallucination** — missing parameters are reported as "Not stated" / "None found", never guessed.
 - **Two audiences** — a Homeowner / Solar Installer toggle. Installer mode shows the identical analysis as a transparency report ("here is what a customer will see"), and clean high-scoring contracts earn a printable **Lumen-Verified: Transparent** mark.

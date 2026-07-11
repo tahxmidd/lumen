@@ -27,7 +27,7 @@ export default function RedFlags({ result, mode }: { result: AnalysisResult; mod
       </div>
 
       {flags.length === 0 ? (
-        <div className="flex items-start gap-3 rounded-xl border border-fair/40 bg-card p-6">
+        <div className="flex items-start gap-3 rounded-2xl border border-fair/40 bg-card p-6 shadow-md shadow-ink/5">
           <ShieldCheck size={18} className="mt-0.5 shrink-0 text-fair" />
           <p className="text-sm leading-relaxed text-ink">
             No red flags survived the citation check. Lumen only raises a concern when it can quote
@@ -41,7 +41,7 @@ export default function RedFlags({ result, mode }: { result: AnalysisResult; mod
             return (
               <article
                 key={i}
-                className={`rounded-xl border border-hairline border-l-2 bg-card p-6 ${meta.border}`}
+                className={`rounded-2xl border border-hairline border-l-2 bg-card p-6 shadow-md shadow-ink/5 ${meta.border}`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <h3 className="text-base font-medium text-ink">{flag.title}</h3>
@@ -55,11 +55,12 @@ export default function RedFlags({ result, mode }: { result: AnalysisResult; mod
                 <p className="mt-2 text-sm leading-relaxed text-faint">{flag.why}</p>
 
                 {/* Verbatim evidence — raw literalism, pure black, mono */}
-                <figure className="mt-4 rounded-lg border border-hairline bg-canvas p-4">
-                  <figcaption className="mb-2 text-[10px] uppercase tracking-[0.25em] text-gold/80">
+                {/* The evidence stays on black — raw literalism, whatever the theme */}
+                <figure className="mt-4 rounded-lg bg-[#14170f] p-4">
+                  <figcaption className="mb-2 text-[10px] uppercase tracking-[0.25em] text-[#d9b74a]">
                     From your contract — verbatim
                   </figcaption>
-                  <blockquote className="font-mono text-[13px] leading-relaxed text-ink">
+                  <blockquote className="font-mono text-[13px] leading-relaxed text-[#f4f6f2]">
                     &ldquo;{flag.quote}&rdquo;
                   </blockquote>
                 </figure>

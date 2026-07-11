@@ -67,9 +67,50 @@ function stripJsonFences(raw: string): string {
   return body.slice(start, end + 1);
 }
 
+/**
+ * OCR a photo or scanned PDF through the Nutrient Data Extraction API.
+ * Returns the transcribed text, or null so the caller falls back to
+ * sending the raw image to Gemini directly.
+ */
+async function nutrientExtract(base64: string, mimeType: string): Promise<string | null> {
+  const key = process.env.NUTRIENT_API_KEY;
+  if (!key) return null;
+  try {
+    const buffer = Buffer.from(base64, "base64");
+    const form = new FormData();
+    const filename = mimeType === "application/pdf" ? "document.pdf" : "photo.jpg";
+    form.append("file", new Blob([buffer], { type: mimeType }), filename);
+    form.append(
+      "instructions",
+      JSON.stringify({ output: { formats: ["markdown"] }, options: { language: "auto" } })
+    );
+
+    const res = await fetch("https://api.nutrient.io/extraction/parse", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}` },
+      body: form,
+      signal: AbortSignal.timeout(45_000),
+    });
+    if (!res.ok) {
+      console.error("[lumen] nutrient OCR failed:", res.status, await res.text().catch(() => ""));
+      return null;
+    }
+    const json = (await res.json()) as { output?: { markdown?: string } };
+    const markdown = json.output?.markdown?.trim();
+    return markdown && markdown.length >= 40 ? markdown : null;
+  } catch (err) {
+    console.error("[lumen] nutrient OCR error:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
 const SEVERITY_ORDER: Record<Severity, number> = { high: 0, medium: 1, low: 2 };
 
-function sanitize(raw: unknown, sourceText: string | null): AnalysisResult {
+function sanitize(
+  raw: unknown,
+  sourceText: string | null,
+  verification: AnalysisResult["verification"]
+): AnalysisResult {
   const r = raw as Partial<AnalysisResult>;
 
   const score = Math.max(0, Math.min(100, Math.round(Number(r.score) || 0)));
@@ -128,7 +169,7 @@ function sanitize(raw: unknown, sourceText: string | null): AnalysisResult {
       typeof r.limits === "string" && r.limits
         ? r.limits
         : "This automated review cannot verify signatures, verbal promises, or state-specific consumer law.",
-    verification: sourceText !== null ? "text-matched" : "image-unverifiable",
+    verification,
     dropped_flags: candidateFlags.length - verifiedFlags.length,
   };
 }
@@ -161,7 +202,7 @@ export async function POST(req: NextRequest) {
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.5-flash",
     systemInstruction: SYSTEM_PROMPT,
     generationConfig: {
       responseMimeType: "application/json",
@@ -170,17 +211,40 @@ export async function POST(req: NextRequest) {
   });
 
   try {
-    const parts = text
-      ? [{ text: `CONTRACT TEXT TO ANALYZE:\n\n${text}` }]
-      : [
-          { text: "Analyze the solar contract in this image. Transcribe it faithfully first, then apply every rule." },
+    let parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }>;
+    let sourceText: string | null;
+    let verification: AnalysisResult["verification"];
+
+    if (text) {
+      parts = [{ text: `CONTRACT TEXT TO ANALYZE:\n\n${text}` }];
+      sourceText = text;
+      verification = "text-matched";
+    } else {
+      // Photo or scanned PDF: OCR through Nutrient first so quotes become
+      // machine-verifiable. Fall back to Gemini vision if OCR is unavailable.
+      const ocrText = await nutrientExtract(image!.data, image!.mimeType || "image/jpeg");
+      if (ocrText) {
+        parts = [
+          {
+            text: `CONTRACT TEXT TO ANALYZE (transcribed from a photo/scan via OCR — quote exactly from this transcription):\n\n${ocrText}`,
+          },
+        ];
+        sourceText = ocrText;
+        verification = "ocr-text-matched";
+      } else {
+        parts = [
+          { text: "Analyze the solar contract in this document. Transcribe it faithfully first, then apply every rule." },
           { inlineData: { data: image!.data, mimeType: image!.mimeType || "image/jpeg" } },
         ];
+        sourceText = null;
+        verification = "image-unverifiable";
+      }
+    }
 
     const result = await model.generateContent(parts);
     const rawText = result.response.text();
     const parsed = JSON.parse(stripJsonFences(rawText));
-    const analysis = sanitize(parsed, text ? text : null);
+    const analysis = sanitize(parsed, sourceText, verification);
 
     return NextResponse.json(analysis);
   } catch (err) {

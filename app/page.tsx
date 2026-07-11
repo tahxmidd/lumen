@@ -60,7 +60,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Top bar */}
-      <header className="border-b border-hairline">
+      <header className="sticky top-0 z-30 border-b border-hairline bg-canvas/60 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-[940px] items-center justify-between px-6 py-4">
           <button
             onClick={reset}

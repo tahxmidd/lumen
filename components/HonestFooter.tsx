@@ -5,7 +5,7 @@ import type { AnalysisResult } from "@/lib/types";
 
 export default function HonestFooter({ result }: { result: AnalysisResult }) {
   return (
-    <section className="rounded-xl border border-hairline bg-card p-6 sm:p-8">
+    <section className="rounded-2xl border border-hairline bg-card p-6 shadow-md shadow-ink/5 sm:p-8">
       <h2 className="font-display text-xl text-ink">The honest footer</h2>
 
       {result.checked.length > 0 && (
@@ -17,7 +17,7 @@ export default function HonestFooter({ result }: { result: AnalysisResult }) {
             {result.checked.map((item, i) => (
               <span
                 key={i}
-                className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-3 py-1 text-xs text-ink"
+                className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-white/60 px-3 py-1 text-xs text-ink"
               >
                 <Check size={11} className="text-fair" />
                 {item}
@@ -38,6 +38,12 @@ export default function HonestFooter({ result }: { result: AnalysisResult }) {
             <p className="mt-2 text-xs text-faint">
               This document arrived as a photo, so quotes are drawn from the engine&rsquo;s
               transcription of the image — compare them against your paper copy.
+            </p>
+          )}
+          {result.verification === "ocr-text-matched" && (
+            <p className="mt-2 text-xs text-faint">
+              This document was read by OCR, and every quote was machine-verified against that
+              transcription — still compare the wording against your paper copy.
             </p>
           )}
         </div>

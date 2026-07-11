@@ -19,7 +19,7 @@ export default function KeyTerms({ result, mode }: { result: AnalysisResult; mod
         {result.key_terms.map((term, i) => (
           <div
             key={i}
-            className={`rounded-xl border bg-card p-5 ${
+            className={`rounded-2xl border bg-card p-5 shadow-md shadow-ink/5 ${
               term.hot ? "border-risk/40" : "border-hairline"
             }`}
           >
