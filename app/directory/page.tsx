@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Sun, Search, BadgeCheck, SlidersHorizontal } from "lucide-react";
+import { Sun, Search, BadgeCheck, SlidersHorizontal, GitCompareArrows, Check } from "lucide-react";
 import {
   DIRECTORY,
   type DirectoryEntry,
@@ -10,6 +10,7 @@ import {
   getKeyTerm,
   hasEscalator,
 } from "@/lib/directory-data";
+import { useCompare } from "@/lib/compare-store";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type SortKey = "date-desc" | "date-asc" | "score-desc" | "price-asc" | "price-desc";
@@ -68,6 +69,8 @@ function formatDate(iso: string): string {
 // ─── Card ─────────────────────────────────────────────────────────────────────
 function AuditCard({ entry }: { entry: DirectoryEntry }) {
   const meta = RATING_META[entry.result.rating];
+  const { add, remove, has, canAdd } = useCompare();
+  const inCompare = has(entry.id);
   const priceDisplay = getPriceDisplay(entry);
   const escalatorDisplay = getEscalatorDisplay(entry);
   const systemTerm = getKeyTerm(entry.result.key_terms, "system", "size");
@@ -149,8 +152,20 @@ function AuditCard({ entry }: { entry: DirectoryEntry }) {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t border-hairline px-6 py-3">
-        <span className="text-xs text-faint">{formatDate(entry.auditDate)}</span>
+      <div className="flex items-center justify-between border-t border-hairline px-6 py-3 gap-2">
+        <button
+          onClick={() => inCompare ? remove(entry.id) : add({ type: "directory", id: entry.id, label: entry.companyName })}
+          disabled={!inCompare && !canAdd}
+          title={!inCompare && !canAdd ? "Compare tray is full (max 4)" : undefined}
+          className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-medium transition-all ${
+            inCompare
+              ? "border-gold/60 bg-gold/10 text-gold"
+              : "border-hairline text-faint hover:border-gold/40 hover:text-ink disabled:opacity-30"
+          }`}
+        >
+          {inCompare ? <Check size={10} /> : <GitCompareArrows size={10} />}
+          {inCompare ? "Added" : "Compare"}
+        </button>
         <Link
           href={`/directory/${entry.id}`}
           className="text-xs font-medium text-gold transition-colors hover:text-ink"
