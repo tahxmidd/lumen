@@ -16,7 +16,8 @@ export async function extractPdfText(file: File): Promise<string> {
   }
 
   const data = await file.arrayBuffer();
-  const doc = await pdfjs.getDocument({ data }).promise;
+  const loadingTask = pdfjs.getDocument({ data });
+  const doc = await loadingTask.promise;
 
   const pages: string[] = [];
   for (let i = 1; i <= doc.numPages; i++) {
@@ -27,7 +28,7 @@ export async function extractPdfText(file: File): Promise<string> {
       .join(" ");
     pages.push(pageText);
   }
-  await doc.destroy();
+  await loadingTask.destroy();
 
   return pages.join("\n\n").replace(/\s+/g, " ").trim();
 }

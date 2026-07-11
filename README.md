@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lumen ☀️
 
-## Getting Started
+**Read your solar contract in full daylight.**
 
-First, run the development server:
+Lumen is a forensic consumer-advocate tool that audits residential solar contracts for predatory terms — hidden dealer fees, compounding escalators, acceleration-on-transfer clauses, punitive cancellation penalties, and more.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## The trust rule
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Lumen's core metric is absolute consumer trust: **every red flag must be paired with the exact verbatim line of contract text it was extracted from.** This is enforced twice:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **In the prompt** — the model is instructed that a flag without a character-for-character quote is forbidden.
+2. **In code** — for text inputs, the server independently verifies each returned quote against the source document (whitespace/smart-quote normalized). Any flag whose quote cannot be found verbatim is dropped before it ever reaches the UI, and the UI discloses how many were withheld.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+No citation, no flag.
 
-## Learn More
+## Setup
 
-To learn more about Next.js, take a look at the following resources:
+1. Install dependencies:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. Create your environment file:
 
-## Deploy on Vercel
+   ```bash
+   cp .env.local.example .env.local
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. Get a free Gemini API key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey) and paste it into `.env.local`:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   ```
+   GEMINI_API_KEY=your-key-here
+   ```
+
+4. Run the dev server:
+
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) and hit **"Try a sample contract"** to see a predatory agreement lit up instantly.
+
+## How it works
+
+- **Three input paths** — drag-and-drop PDF (text extracted client-side via `pdfjs-dist`, so the document is read privately in your browser), raw pasted text, or a camera/photo upload (sent as base64 so Gemini performs OCR and structural analysis in one pass).
+- **Server-side trust engine** — `app/api/analyze/route.ts` calls `gemini-2.5-flash` with a strict forensic-advocate system prompt and JSON response mode, then sanitizes, verifies, severity-sorts, and caps the output. The API key never leaves the server.
+- **Benchmark math** — if system size and total cost are present, price-per-watt is computed and compared against the ~$3.00/W US average; significant spikes are marked hot.
+- **Anti-hallucination** — missing parameters are reported as "Not stated" / "None found", never guessed.
+- **Two audiences** — a Homeowner / Solar Installer toggle. Installer mode shows the identical analysis as a transparency report ("here is what a customer will see"), and clean high-scoring contracts earn a printable **Lumen-Verified: Transparent** mark.
+- **Stateless** — nothing is stored; every analysis lives only in the request.
+
+## Stack
+
+Next.js (App Router) · TypeScript · Tailwind CSS · `@google/generative-ai` · `pdfjs-dist` · Lucide
+
+## Disclaimer
+
+Lumen is an educational framework, not formal legal counsel. Review any contract with a qualified professional in your state before signing or cancelling.
