@@ -8,6 +8,7 @@ import RedFlags from "@/components/RedFlags";
 import KeyTerms from "@/components/KeyTerms";
 import HonestFooter from "@/components/HonestFooter";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import SolarMarketDensityMap from "@/components/SolarMarketDensityMap";
 
 function Reveal({ children, order }: { children: React.ReactNode; order: number }) {
   return (
@@ -85,6 +86,9 @@ export default function ResultView({
         </Reveal>
         <Reveal order={verified ? 4 : 3}>
           <HonestFooter result={result} />
+        </Reveal>
+        <Reveal order={verified ? 5 : 4}>
+          <SolarMarketDensityMap />
         </Reveal>
       </div>
     </div>

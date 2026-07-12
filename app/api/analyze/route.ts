@@ -178,7 +178,10 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { error: "GEMINI_API_KEY is not set. Copy .env.local.example to .env.local and add your key." },
+      {
+        error:
+          "GEMINI_API_KEY is not set. Local: copy .env.local.example to .env.local. Vercel: add GEMINI_API_KEY under Project → Settings → Environment Variables, then redeploy.",
+      },
       { status: 500 }
     );
   }

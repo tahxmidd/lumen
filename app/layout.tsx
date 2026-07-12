@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Source_Serif_4, Inter, IBM_Plex_Mono } from "next/font/google";
 import { DaylightSky } from "@/components/ui/daylight-sky";
 import ClientProviders from "@/components/ClientProviders";
+import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
 const sourceSerif = Source_Serif_4({
