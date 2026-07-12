@@ -104,6 +104,16 @@ async function nutrientExtract(base64: string, mimeType: string): Promise<string
   }
 }
 
+// Each model has its own free-tier quota bucket, so when the primary is
+// rate-limited (free tier allows only ~20 requests/day per model) we fall
+// through to the next one instead of failing the audit.
+const MODEL_FALLBACKS = ["gemini-3.5-flash", "gemini-3-flash-preview", "gemini-3.1-flash-lite"];
+
+function isRateLimitError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /\b429\b|Too Many Requests|quota|RESOURCE_EXHAUSTED/i.test(msg);
+}
+
 const SEVERITY_ORDER: Record<Severity, number> = { high: 0, medium: 1, low: 2 };
 
 function sanitize(
@@ -204,14 +214,6 @@ export async function POST(req: NextRequest) {
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-3.5-flash",
-    systemInstruction: SYSTEM_PROMPT,
-    generationConfig: {
-      responseMimeType: "application/json",
-      temperature: 0.1,
-    },
-  });
 
   try {
     let parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }>;
@@ -244,8 +246,42 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const result = await model.generateContent(parts);
-    const rawText = result.response.text();
+    let rawText: string | null = null;
+    let rateLimited = false;
+    for (const modelName of MODEL_FALLBACKS) {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        systemInstruction: SYSTEM_PROMPT,
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.1,
+        },
+      });
+      try {
+        const result = await model.generateContent(parts);
+        rawText = result.response.text();
+        break;
+      } catch (err) {
+        if (isRateLimitError(err)) {
+          rateLimited = true;
+          console.warn(`[lumen] ${modelName} rate-limited, trying next fallback`);
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    if (rawText === null) {
+      return NextResponse.json(
+        {
+          error: rateLimited
+            ? "Lumen is at its request limit right now. Wait a minute and try again."
+            : "Analysis failed — no model was available. Try again in a moment.",
+        },
+        { status: 429 }
+      );
+    }
+
     const parsed = JSON.parse(stripJsonFences(rawText));
     const analysis = sanitize(parsed, sourceText, verification);
 
